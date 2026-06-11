@@ -65,6 +65,66 @@ export const QUESTIONS = [
       { label: 'No sorting — all in one bin', value: 'none', points: 260 },
     ],
   },
+  {
+    id: 'water',
+    category: 'Water Usage',
+    icon: '💧',
+    question: 'How conscious are you about household water use?',
+    options: [
+      { label: 'Short showers, fix leaks, reuse water', value: 'conservative', points: 30 },
+      { label: 'Mostly mindful with occasional waste', value: 'balanced', points: 90 },
+      { label: 'Standard daily usage', value: 'average', points: 160 },
+      { label: 'Long showers and running taps', value: 'wasteful', points: 240 },
+    ],
+  },
+  {
+    id: 'diet',
+    category: 'Diet Type',
+    icon: '🥗',
+    question: 'What best describes your broader eating habits?',
+    options: [
+      { label: 'Local, seasonal plant-forward meals', value: 'seasonal', points: 35 },
+      { label: 'Vegetarian most days', value: 'vegetarian', points: 95 },
+      { label: 'Balanced omnivore', value: 'omnivore', points: 175 },
+      { label: 'Highly processed or meat-heavy', value: 'processed', points: 250 },
+    ],
+  },
+  {
+    id: 'renewable',
+    category: 'Renewable Energy',
+    icon: '☀️',
+    question: 'How much renewable energy powers your home?',
+    options: [
+      { label: '100% renewable sources', value: 'full', points: 20 },
+      { label: 'Mostly green power', value: 'majority', points: 80 },
+      { label: 'Some renewable mix', value: 'mixed', points: 160 },
+      { label: 'No renewable energy', value: 'none', points: 260 },
+    ],
+  },
+  {
+    id: 'airTravel',
+    category: 'Air Travel',
+    icon: '✈️',
+    question: 'How often do you travel by airplane?',
+    options: [
+      { label: 'Rarely or never', value: 'none', points: 20 },
+      { label: '1-2 short trips per year', value: 'light', points: 100 },
+      { label: 'Several flights per year', value: 'moderate', points: 220 },
+      { label: 'Frequent flyer lifestyle', value: 'frequent', points: 300 },
+    ],
+  },
+  {
+    id: 'recycling',
+    category: 'Recycling',
+    icon: '🌱',
+    question: 'How consistently do you recycle and compost?',
+    options: [
+      { label: 'Always recycle and compost', value: 'always', points: 25 },
+      { label: 'Mostly recycle', value: 'mostly', points: 90 },
+      { label: 'Rarely recycle', value: 'rarely', points: 180 },
+      { label: 'Never sort waste', value: 'never', points: 250 },
+    ],
+  },
 ]
 
 /**
@@ -177,6 +237,31 @@ const TIP_LIBRARY = {
     'Set up a simple home compost bin — food scraps become soil instead of landfill methane.',
     'Learn your local recycling rules; "wish-cycling" contaminates batches and wastes energy.',
     'Carry a reusable bottle and bag — eliminating single-use plastics is an easy daily win.',
+  ],
+  water: [
+    'Collect rainwater for gardening and cleaning tasks to lower your household water footprint.',
+    'Fix leaks promptly and install low-flow fixtures to save water without sacrificing comfort.',
+    'Reuse cooking water or shower runoff where possible — every liter saved helps your village.',
+  ],
+  diet: [
+    'Support local farmers and choose seasonal produce to reduce food miles significantly.',
+    'Swap one processed meal per week for a whole-food alternative to cut embedded emissions.',
+    'Build meals around vegetables, grains, and legumes for a lower-carbon plate.',
+  ],
+  renewable: [
+    'If you can, switch to a green energy tariff or community solar program for cleaner power.',
+    'Consider rooftop solar or community renewable credits to shrink your household footprint.',
+    'Track your energy mix: cleaner electricity today equals greener village visuals tomorrow.',
+  ],
+  airTravel: [
+    'Choose a train or bus for short and medium-distance trips to avoid high flight emissions.',
+    'Offset a flight by supporting verified tree planting or carbon removal programs.',
+    'Reduce long-haul travel by combining trips and staying longer to make each flight count.',
+  ],
+  recycling: [
+    'Create a simple sorting station at home so recycling becomes effortless every day.',
+    'Buy products with less packaging and choose reusable containers whenever possible.',
+    'Make composting a habit for food waste — it closes the loop and enriches soil.',
   ],
 }
 

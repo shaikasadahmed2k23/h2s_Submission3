@@ -48,14 +48,14 @@ export default function App() {
               </span>
             </h2>
             <p className="mb-10 max-w-lg text-lg text-slate-400">
-              Answer 5 quick questions about your daily habits. Watch your
+              Answer 10 quick questions about your daily habits. Watch your
               village transform — from a smoky factory town to a lush green
               paradise — based on your carbon footprint.
             </p>
 
             <div className="mb-10 grid max-w-md grid-cols-2 gap-4 text-left text-sm">
               {[
-                { icon: '📝', label: '5 habit questions' },
+                { icon: '📝', label: '10 habit questions' },
                 { icon: '🏘️', label: 'Live 3D village' },
                 { icon: '🏆', label: 'Eco-rank & score' },
                 { icon: '✨', label: 'AI-powered tips' },

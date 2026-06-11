@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Cloud, Stars } from '@react-three/drei'
 import * as THREE from 'three'
@@ -110,22 +110,85 @@ function Factory({ position }) {
   )
 }
 
+function Turbine({ position, rotation = 0 }) {
+  const bladesRef = useRef()
+
+  useFrame(({ clock }) => {
+    if (!bladesRef.current) return
+    bladesRef.current.rotation.y = clock.elapsedTime * 1.4
+  })
+
+  return (
+    <group position={position} rotation={[0, rotation, 0]}>
+      <mesh position={[0, 0.75, 0]} castShadow>
+        <cylinderGeometry args={[0.12, 0.12, 1.5, 8]} />
+        <meshStandardMaterial color="#d9d9d9" roughness={0.4} />
+      </mesh>
+      <group ref={bladesRef} position={[0, 1.6, 0]}>
+        {[0, 1, 2].map((i) => (
+          <mesh key={i} rotation={[0, (i * Math.PI) / 1.5, 0]}>
+            <boxGeometry args={[0.05, 0.05, 1.2]} />
+            <meshStandardMaterial color="#eef6ff" roughness={0.2} metalness={0.4} />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  )
+}
+
+function SolarPanel({ position, rotation = 0 }) {
+  return (
+    <group position={position} rotation={[0, rotation, 0]}>
+      <mesh position={[0, 0.16, 0]} rotation={[-Math.PI / 5, 0, 0]} castShadow>
+        <boxGeometry args={[1.6, 0.08, 1.2]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.8} />
+      </mesh>
+      <mesh position={[0, 0.05, -0.6]} castShadow>
+        <boxGeometry args={[1.8, 0.1, 0.2]} />
+        <meshStandardMaterial color="#64748b" roughness={0.7} />
+      </mesh>
+    </group>
+  )
+}
+
 // ─── Ground & environment ────────────────────────────────────────────────────
 
 function VillageScene({ score }) {
   const pollution = getPollutionFactor(score)
+  const [animatedPollution, setAnimatedPollution] = useState(pollution)
+
+  useEffect(() => {
+    let frame = null
+
+    const animate = () => {
+      setAnimatedPollution((prev) => {
+        const next = prev + (pollution - prev) * 0.1
+        if (Math.abs(pollution - next) < 0.002) {
+          cancelAnimationFrame(frame)
+          return pollution
+        }
+        return next
+      })
+      frame = requestAnimationFrame(animate)
+    }
+
+    frame = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(frame)
+  }, [pollution])
+
+  const displayPollution = animatedPollution
 
   const skyColor = useMemo(
-    () => lerpColor('#87CEEB', '#2c2c3e', pollution),
-    [pollution],
+    () => lerpColor('#87CEEB', '#2c2c3e', displayPollution),
+    [displayPollution],
   )
   const groundColor = useMemo(
-    () => lerpColor('#3a7d44', '#3d3225', pollution),
-    [pollution],
+    () => lerpColor('#3a7d44', '#3d3225', displayPollution),
+    [displayPollution],
   )
   const fogColor = useMemo(
-    () => lerpColor('#b0d4f1', '#4a4a5a', pollution),
-    [pollution],
+    () => lerpColor('#b0d4f1', '#4a4a5a', displayPollution),
+    [displayPollution],
   )
 
   // Tree positions scattered around the village
@@ -152,9 +215,23 @@ function VillageScene({ score }) {
     [],
   )
 
-  // Blend cottages → factories based on pollution
-  const showFactories = pollution > 0.35
-  const factoryOpacity = Math.min(1, (pollution - 0.35) / 0.4)
+  const panelPositions = useMemo(
+    () => [
+      [-4.5, 0, 4.5], [4.5, 0, -4.5],
+    ],
+    [],
+  )
+
+  const turbinePositions = useMemo(
+    () => [
+      [-5, 0, 2], [5, 0, -2],
+    ],
+    [],
+  )
+
+  const showFactories = displayPollution > 0.35
+  const factoryOpacity = Math.min(1, (displayPollution - 0.35) / 0.4)
+  const showRenewables = score < 400
 
   return (
     <>
@@ -218,6 +295,18 @@ function VillageScene({ score }) {
             <Factory position={[0, 0, 0]} />
           </group>
         ))}
+
+      {/* Renewable infrastructure for cleaner worlds */}
+      {showRenewables && (
+        <>
+          {panelPositions.map((pos, i) => (
+            <SolarPanel key={`panel-${i}`} position={pos} rotation={i === 0 ? 0.35 : -0.35} />
+          ))}
+          {turbinePositions.map((pos, i) => (
+            <Turbine key={`turbine-${i}`} position={pos} rotation={i * 0.4} />
+          ))}
+        </>
+      )}
 
       {/* Clouds for clean sky */}
       {pollution < 0.6 && (

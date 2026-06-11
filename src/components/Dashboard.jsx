@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { getEcoRank, getPollutionFactor } from '../utils/calculator'
 
 /**
@@ -8,6 +9,24 @@ export default function Dashboard({ score, tips, onRetake }) {
   const rank = getEcoRank(score)
   const pollution = getPollutionFactor(score)
   const ecoPercent = Math.round((1 - pollution) * 100)
+  const [shareStatus, setShareStatus] = useState('')
+
+  const treesToPlant = Math.max(1, Math.ceil(score / 50))
+  const shareMessage = `My EcoVillage score is ${score}/1000 and my rank is ${rank.rank}. Build your own greener world!`
+
+  const handleShare = async () => {
+    if (navigator?.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(shareMessage)
+        setShareStatus('Copied!')
+      } catch {
+        setShareStatus('Unable to copy to clipboard')
+      }
+    } else {
+      setShareStatus('Clipboard not available')
+    }
+    window.setTimeout(() => setShareStatus(''), 1800)
+  }
 
   return (
     <div className="animate-fade-slide-up flex h-full flex-col gap-5">
@@ -89,6 +108,22 @@ export default function Dashboard({ score, tips, onRetake }) {
             </li>
           ))}
         </ul>
+
+        <div className="mt-6 rounded-2xl border border-slate-700/60 bg-slate-900/80 p-4 text-sm text-slate-300">
+          <p className="mb-2 text-slate-400">Carbon offset tip</p>
+          <p className="text-white">Plant {treesToPlant} trees to neutralize your footprint.</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleShare}
+          className="mt-4 w-full rounded-xl bg-gradient-to-r from-violet-500 to-sky-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition-colors hover:from-violet-400 hover:to-sky-400"
+        >
+          Share Your Village
+        </button>
+        {shareStatus && (
+          <p className="mt-2 text-center text-sm text-emerald-300">{shareStatus}</p>
+        )}
       </div>
 
       {/* Retake */}
