@@ -1,6 +1,14 @@
+import PropTypes from 'prop-types'
+
 /**
- * Top navigation bar with branding and step indicator.
- * @param {{ step: 'welcome' | 'quiz' | 'results' }} props
+ * Top navigation bar with branding and multi-step progress indicator.
+ * Displays EcoVillage logo/branding and shows which step user is currently on.
+ * Dynamically highlights completed steps in navigation.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {('welcome'|'quiz'|'results')} props.step - Current step in the quiz flow
+ * @returns {React.ReactElement} Sticky header with logo, title, and progress indicators
  */
 export default function Navbar({ step }) {
   const steps = [
@@ -50,4 +58,12 @@ export default function Navbar({ step }) {
       </div>
     </header>
   )
+}
+
+/**
+ * PropTypes validation for Navbar component props.
+ */
+Navbar.propTypes = {
+  /** Current step in the multi-step quiz flow */
+  step: PropTypes.oneOf(['welcome', 'quiz', 'results']).isRequired,
 }

@@ -1,19 +1,45 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import PropTypes from 'prop-types'
 import { getEcoRank, getPollutionFactor } from '../utils/calculator'
+import { SCORE_CONFIG, UI_CONFIG } from '../constants/config'
 
 /**
- * Dashboard showing eco-rank, carbon score, and personalized tips.
- * @param {{ score: number, tips: string[], onRetake: () => void }} props
+ * Dashboard component displaying user's eco-rank, carbon score, and AI tips.
+ * Shows village health percentage, personalized recommendations, and offset guidance.
+ * Provides a share button to copy the result to clipboard.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {number} props.score - Carbon score (0-1000)
+ * @param {string[]} props.tips - Array of 3 personalized eco-tips
+ * @param {Function} props.onRetake - Callback function when user clicks retake button
+ * @returns {React.ReactElement} Dashboard UI with rank badge, score, tips, and action buttons
  */
 export default function Dashboard({ score, tips, onRetake }) {
-  const rank = getEcoRank(score)
-  const pollution = getPollutionFactor(score)
-  const ecoPercent = Math.round((1 - pollution) * 100)
   const [shareStatus, setShareStatus] = useState('')
 
-  const treesToPlant = Math.max(1, Math.ceil(score / 50))
+  // Memoize expensive calculations to prevent unnecessary recalculations
+  const calculatedRank = useMemo(() => getEcoRank(score), [score])
+  const calculatedPollution = useMemo(() => getPollutionFactor(score), [score])
+  const ecoPercent = useMemo(
+    () => Math.round((1 - calculatedPollution) * 100),
+    [calculatedPollution],
+  )
+  const treesToPlant = useMemo(
+    () => Math.max(1, Math.ceil(score / SCORE_CONFIG.TREE_DIVISOR)),
+    [score],
+  )
+
+  const rank = calculatedRank
+  const pollution = calculatedPollution
   const shareMessage = `My EcoVillage score is ${score}/1000 and my rank is ${rank.rank}. Build your own greener world!`
 
+  /**
+   * Handles share button click by copying message to clipboard.
+   * Sets temporary status message to confirm copy action.
+   *
+   * @async
+   */
   const handleShare = async () => {
     if (navigator?.clipboard?.writeText) {
       try {
@@ -25,7 +51,7 @@ export default function Dashboard({ score, tips, onRetake }) {
     } else {
       setShareStatus('Clipboard not available')
     }
-    window.setTimeout(() => setShareStatus(''), 1800)
+    window.setTimeout(() => setShareStatus(''), UI_CONFIG.SHARE_STATUS_TIMEOUT)
   }
 
   return (
@@ -136,4 +162,16 @@ export default function Dashboard({ score, tips, onRetake }) {
       </button>
     </div>
   )
+}
+
+/**
+ * PropTypes validation for Dashboard component props.
+ */
+Dashboard.propTypes = {
+  /** Carbon score between 0 and 1000 */
+  score: PropTypes.number.isRequired,
+  /** Array of exactly 3 personalized eco-tips */
+  tips: PropTypes.arrayOf(PropTypes.string).isRequired,
+  /** Callback function triggered when user wants to retake the quiz */
+  onRetake: PropTypes.func.isRequired,
 }

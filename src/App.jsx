@@ -1,19 +1,36 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, lazy, Suspense } from 'react'
 import Navbar from './components/Navbar'
 import Quiz from './components/Quiz'
-import World from './components/World'
 import Dashboard from './components/Dashboard'
 import {
   calculateCarbonScore,
   generateTips,
 } from './utils/calculator'
 
-/** App flow: welcome → quiz → results (3D world + dashboard) */
+// Lazy load World component (heaviest component with Three.js 3D rendering)
+const World = lazy(() => import('./components/World'))
+
+/**
+ * Main application component managing the multi-step flow.
+ * Orchestrates navigation between welcome, quiz, and results screens.
+ * Manages the user's carbon score and personalized eco-tips state.
+ *
+ * Flow: welcome → quiz → results (3D world + dashboard)
+ *
+ * @component
+ * @returns {React.ReactElement} The complete EcoVillage application UI
+ */
 export default function App() {
   const [step, setStep] = useState('welcome')
   const [score, setScore] = useState(0)
   const [tips, setTips] = useState([])
 
+  /**
+   * Handles quiz completion by calculating carbon score and generating tips.
+   * Transitions app to results screen.
+   *
+   * @param {Record<string, string>} answers - User's quiz answers (question id → option value)
+   */
   const handleQuizComplete = useCallback((answers) => {
     const carbonScore = calculateCarbonScore(answers)
     const ecoTips = generateTips(answers, carbonScore)
@@ -22,12 +39,18 @@ export default function App() {
     setStep('results')
   }, [])
 
+  /**
+   * Handles quiz retake by resetting score/tips and returning to quiz screen.
+   */
   const handleRetake = useCallback(() => {
     setScore(0)
     setTips([])
     setStep('quiz')
   }, [])
 
+  /**
+   * Handles start button click to transition to quiz screen.
+   */
   const handleStart = useCallback(() => {
     setStep('quiz')
   }, [])
@@ -111,7 +134,9 @@ export default function App() {
               {/* 3D world takes more space */}
               <div className="lg:col-span-3">
                 <div className="h-[400px] lg:h-[calc(100vh-220px)] lg:min-h-[480px]">
-                  <World score={score} />
+                  <Suspense fallback={<div className="h-full w-full rounded-2xl border border-slate-700/60 bg-slate-900/80 animate-pulse" />}>
+                    <World score={score} />
+                  </Suspense>
                 </div>
               </div>
 

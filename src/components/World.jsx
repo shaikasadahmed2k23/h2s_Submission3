@@ -1,12 +1,21 @@
 import { useRef, useMemo, useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Cloud, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 import { getPollutionFactor } from '../utils/calculator'
+import { WORLD_CONFIG, WORLD_STATUS, SCORE_CONFIG } from '../constants/config'
 
-// ─── Color helpers ───────────────────────────────────────────────────────────
-
-/** Linearly interpolate between two hex colors */
+/**
+ * Linearly interpolates between two hex colors.
+ * Used for smooth color transitions based on pollution level.
+ *
+ * @private
+ * @param {string} a - Start hex color (e.g., '#00FF00')
+ * @param {string} b - End hex color (e.g., '#FF0000')
+ * @param {number} t - Interpolation factor (0-1)
+ * @returns {string} Interpolated color as hex string
+ */
 function lerpColor(a, b, t) {
   const ca = new THREE.Color(a)
   const cb = new THREE.Color(b)
@@ -15,7 +24,17 @@ function lerpColor(a, b, t) {
 
 // ─── Tree ────────────────────────────────────────────────────────────────────
 
-/** Single stylized tree — green when clean, brown/dead when polluted */
+/**
+ * Single stylized tree model that morphs visually based on pollution level.
+ * Green and healthy when clean, brown and withered when polluted.
+ *
+ * @private
+ * @param {Object} props - Component props
+ * @param {number[]} props.position - [x, y, z] position in 3D space
+ * @param {number} props.pollution - Pollution factor (0-1) affecting tree appearance
+ * @param {number} props.scale - Scale multiplier for tree size
+ * @returns {React.ReactElement} Three.js Group with tree geometry
+ */
 function Tree({ position, pollution, scale = 1 }) {
   const foliageColor = lerpColor('#2d6a4f', '#4a3728', pollution)
   const trunkColor = lerpColor('#5c4033', '#3d2b1f', pollution * 0.5)
@@ -45,6 +64,16 @@ function Tree({ position, pollution, scale = 1 }) {
 
 // ─── Cottage (clean village) ─────────────────────────────────────────────────
 
+/**
+ * Cottage building model representing clean, eco-friendly village structures.
+ * Only visible when pollution level is low.
+ *
+ * @private
+ * @param {Object} props - Component props
+ * @param {number[]} props.position - [x, y, z] position in 3D space
+ * @param {number} props.rotation - Y-axis rotation in radians
+ * @returns {React.ReactElement} Three.js Group with cottage geometry
+ */
 function Cottage({ position, rotation = 0 }) {
   return (
     <group position={position} rotation={[0, rotation, 0]}>
@@ -69,6 +98,16 @@ function Cottage({ position, rotation = 0 }) {
 
 // ─── Factory (polluted village) ──────────────────────────────────────────────
 
+/**
+ * Factory building model representing industrial pollution.
+ * Features an animated chimney with rising smoke puffs.
+ * Only visible when pollution level is high.
+ *
+ * @private
+ * @param {Object} props - Component props
+ * @param {number[]} props.position - [x, y, z] position in 3D space
+ * @returns {React.ReactElement} Three.js Group with factory geometry and animated smoke
+ */
 function Factory({ position }) {
   const smokeRef = useRef()
 
@@ -110,6 +149,17 @@ function Factory({ position }) {
   )
 }
 
+/**
+ * Wind turbine model representing renewable energy infrastructure.
+ * Blades rotate continuously based on elapsed time.
+ * Only visible when pollution level is low (clean energy focus).
+ *
+ * @private
+ * @param {Object} props - Component props
+ * @param {number[]} props.position - [x, y, z] position in 3D space
+ * @param {number} props.rotation - Y-axis rotation in radians
+ * @returns {React.ReactElement} Three.js Group with turbine tower and animated blades
+ */
 function Turbine({ position, rotation = 0 }) {
   const bladesRef = useRef()
 
@@ -136,6 +186,17 @@ function Turbine({ position, rotation = 0 }) {
   )
 }
 
+/**
+ * Solar panel model representing renewable solar energy infrastructure.
+ * Panel tilted at optimal angle for light capture.
+ * Only visible when pollution level is low (clean energy focus).
+ *
+ * @private
+ * @param {Object} props - Component props
+ * @param {number[]} props.position - [x, y, z] position in 3D space
+ * @param {number} props.rotation - Y-axis rotation in radians
+ * @returns {React.ReactElement} Three.js Group with solar panel geometry
+ */
 function SolarPanel({ position, rotation = 0 }) {
   return (
     <group position={position} rotation={[0, rotation, 0]}>
@@ -153,6 +214,16 @@ function SolarPanel({ position, rotation = 0 }) {
 
 // ─── Ground & environment ────────────────────────────────────────────────────
 
+/**
+ * Main 3D village scene that transforms based on carbon score.
+ * Animates smooth transitions between clean (eco-friendly) and polluted (industrial) states.
+ * Manages all village buildings, trees, renewable energy, and sky elements.
+ *
+ * @private
+ * @param {Object} props - Component props
+ * @param {number} props.score - Carbon footprint score (0-1000) determining village state
+ * @returns {React.ReactElement} Three.js scene with full village environment
+ */
 function VillageScene({ score }) {
   const pollution = getPollutionFactor(score)
   const [animatedPollution, setAnimatedPollution] = useState(pollution)
@@ -354,9 +425,15 @@ function VillageScene({ score }) {
 // ─── Public export ───────────────────────────────────────────────────────────
 
 /**
- * 3D village world that morphs from green paradise → smoky industrial zone
- * based on the user's carbon score (0 = clean, 1000 = polluted).
- * @param {{ score: number }} props
+ * 3D village world visualization that morphs from green eco-paradise to industrial smoky zone.
+ * Transforms based on user's carbon footprint score.
+ * Displays interactive 3D scene with Thriving, Transitioning, or Polluted village states.
+ * Uses Three.js for 3D rendering with animated transitions between states.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {number} props.score - Carbon footprint score (0-1000) determining village appearance
+ * @returns {React.ReactElement} 3D canvas with village scene and overlay status label
  */
 export default function World({ score }) {
   const pollution = getPollutionFactor(score)
@@ -392,4 +469,12 @@ export default function World({ score }) {
       </Canvas>
     </div>
   )
+}
+
+/**
+ * PropTypes validation for World component props.
+ */
+World.propTypes = {
+  /** Carbon footprint score between 0 and 1000 determining village appearance */
+  score: PropTypes.number.isRequired,
 }

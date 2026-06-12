@@ -3,7 +3,13 @@
  * Score range: 0 (cleanest) → 1000 (highest carbon impact).
  */
 
-/** Quiz questions with weighted point values per answer */
+import { ECO_RANK_CONFIG, TIP_CATEGORIES, SCORE_CONFIG } from '../constants/config'
+
+/**
+ * Array of quiz questions with weighted point values per answer.
+ * Each question maps to a category with multiple choice options and point values.
+ * @type {Array<{id: string, category: string, icon: string, question: string, options: Array}>}
+ */
 export const QUESTIONS = [
   {
     id: 'transport',
@@ -129,8 +135,11 @@ export const QUESTIONS = [
 
 /**
  * Converts quiz answers into a carbon score (0–1000).
+ * Sums the point values for each selected answer option across all questions.
+ * Clamps the result between MIN and MAX score boundaries.
+ *
  * @param {Record<string, string>} answers - Map of question id → selected option value
- * @returns {number}
+ * @returns {number} Carbon score between 0 and 1000
  */
 export function calculateCarbonScore(answers) {
   let total = 0
@@ -141,70 +150,42 @@ export function calculateCarbonScore(answers) {
     if (option) total += option.points
   }
 
-  return Math.min(1000, Math.max(0, total))
+  return Math.min(SCORE_CONFIG.MAX, Math.max(SCORE_CONFIG.MIN, total))
 }
 
 /**
- * Returns eco-rank metadata. Lower carbon score = better rank.
- * @param {number} score
+ * Returns eco-rank metadata for a given carbon score.
+ * Determines the rank tier, label, description, and visual styling based on score range.
+ * Lower carbon score = better rank (Eco Legend is best, Pollution Overlord is worst).
+ *
+ * @param {number} score - Carbon score (0-1000)
+ * @returns {Object} Rank metadata with rank name, tier, description, and Tailwind color classes
  */
 export function getEcoRank(score) {
-  if (score <= 200) {
-    return {
-      rank: 'Eco Legend',
-      tier: 5,
-      description: 'Your village thrives — a beacon of sustainability!',
-      color: 'text-emerald-400',
-      bg: 'bg-emerald-500/20',
-      border: 'border-emerald-500/40',
-      bar: 'bg-emerald-500',
-    }
+  if (score <= ECO_RANK_CONFIG.LEGEND.maxScore) {
+    return ECO_RANK_CONFIG.LEGEND
   }
-  if (score <= 400) {
-    return {
-      rank: 'Green Guardian',
-      tier: 4,
-      description: 'Great habits — keep nurturing your eco-village!',
-      color: 'text-green-400',
-      bg: 'bg-green-500/20',
-      border: 'border-green-500/40',
-      bar: 'bg-green-500',
-    }
+  if (score <= ECO_RANK_CONFIG.GUARDIAN.maxScore) {
+    return ECO_RANK_CONFIG.GUARDIAN
   }
-  if (score <= 600) {
-    return {
-      rank: 'Eco Apprentice',
-      tier: 3,
-      description: 'Room to grow — small changes make a big difference.',
-      color: 'text-yellow-400',
-      bg: 'bg-yellow-500/20',
-      border: 'border-yellow-500/40',
-      bar: 'bg-yellow-500',
-    }
+  if (score <= ECO_RANK_CONFIG.APPRENTICE.maxScore) {
+    return ECO_RANK_CONFIG.APPRENTICE
   }
-  if (score <= 800) {
-    return {
-      rank: 'Carbon Drifter',
-      tier: 2,
-      description: 'Your village is struggling — time to take action.',
-      color: 'text-orange-400',
-      bg: 'bg-orange-500/20',
-      border: 'border-orange-500/40',
-      bar: 'bg-orange-500',
-    }
+  if (score <= ECO_RANK_CONFIG.DRIFTER.maxScore) {
+    return ECO_RANK_CONFIG.DRIFTER
   }
-  return {
-    rank: 'Pollution Overlord',
-    tier: 1,
-    description: 'Critical levels — your world needs urgent care!',
-    color: 'text-red-400',
-    bg: 'bg-red-500/20',
-    border: 'border-red-500/40',
-    bar: 'bg-red-500',
-  }
+  return ECO_RANK_CONFIG.OVERLORD
 }
 
-/** Points contributed by a single answer (for tip prioritization) */
+/**
+ * Extracts the point value for a single answer option.
+ * Helper function used to rank categories by impact in generateTips().
+ *
+ * @private
+ * @param {string} questionId - Question identifier (e.g., 'transport', 'food')
+ * @param {string} answerValue - Selected option value
+ * @returns {number} Point value for the selected option, or 0 if not found
+ */
 function getCategoryPoints(questionId, answerValue) {
   const question = QUESTIONS.find((q) => q.id === questionId)
   const option = question?.options.find((o) => o.value === answerValue)
@@ -267,10 +248,13 @@ const TIP_LIBRARY = {
 
 /**
  * Generates 3 personalized eco-tips based on the user's weakest categories.
+ * Ranks categories by impact (highest points = worst habit) and selects one tip
+ * from each of the top 3 worst categories. Falls back to general tips if needed.
  * Simulates AI-style recommendations using answer analysis.
- * @param {Record<string, string>} answers
- * @param {number} score
- * @returns {string[]}
+ *
+ * @param {Record<string, string>} answers - Map of question id → selected option value
+ * @param {number} score - Carbon score (used for context, not for tip generation)
+ * @returns {string[]} Array of exactly 3 personalized eco-tips
  */
 export function generateTips(answers, score) {
   // Rank categories by impact (highest points = worst habit)
@@ -305,9 +289,13 @@ export function generateTips(answers, score) {
 }
 
 /**
- * Normalized pollution factor for 3D world (0 = clean, 1 = polluted).
- * @param {number} score
+ * Normalized pollution factor for 3D world visualization.
+ * Maps a carbon score (0-1000) to a pollution factor (0-1) for color/effect interpolation.
+ * 0 = clean, green village; 1 = heavily polluted, industrial zone.
+ *
+ * @param {number} score - Carbon score (0-1000)
+ * @returns {number} Pollution factor between 0 (clean) and 1 (polluted)
  */
 export function getPollutionFactor(score) {
-  return Math.min(1, Math.max(0, score / 1000))
+  return Math.min(1, Math.max(0, score / SCORE_CONFIG.MAX))
 }

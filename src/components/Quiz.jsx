@@ -1,9 +1,16 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import PropTypes from 'prop-types'
 import { QUESTIONS } from '../utils/calculator'
 
 /**
- * Interactive 5-question quiz about daily carbon habits.
- * @param {{ onComplete: (answers: Record<string, string>) => void }} props
+ * Interactive quiz component for carbon footprint assessment.
+ * Guides users through 10 questions about daily habits with animated progress.
+ * Manages answer selection and validates responses before advancing.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onComplete - Callback with final answers when quiz is finished
+ * @returns {React.ReactElement} Multi-step quiz UI with progress bar and navigation
  */
 export default function Quiz({ onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -14,11 +21,21 @@ export default function Quiz({ onComplete }) {
   const progress = ((currentIndex + 1) / QUESTIONS.length) * 100
   const isLast = currentIndex === QUESTIONS.length - 1
 
-  const handleSelect = (value) => {
+  /**
+   * Handles answer option selection and updates local state.
+   * Does not advance to next question until user clicks Next button.
+   *
+   * @param {string} value - The selected option value
+   */
+  const handleSelect = useCallback((value) => {
     setSelected(value)
-  }
+  }, [])
 
-  const handleNext = () => {
+  /**
+   * Handles Next button click.
+   * Saves the current answer and advances to next question or completes quiz.
+   */
+  const handleNext = useCallback(() => {
     if (!selected) return
 
     const updated = { ...answers, [question.id]: selected }
@@ -30,14 +47,18 @@ export default function Quiz({ onComplete }) {
       setCurrentIndex((i) => i + 1)
       setSelected(updated[QUESTIONS[currentIndex + 1].id] ?? null)
     }
-  }
+  }, [selected, answers, question.id, isLast, currentIndex, onComplete])
 
-  const handleBack = () => {
+  /**
+   * Handles Back button click.
+   * Returns to previous question and restores previously selected answer.
+   */
+  const handleBack = useCallback(() => {
     if (currentIndex === 0) return
     const prevIndex = currentIndex - 1
     setCurrentIndex(prevIndex)
     setSelected(answers[QUESTIONS[prevIndex].id] ?? null)
-  }
+  }, [currentIndex, answers])
 
   return (
     <div className="animate-fade-slide-up mx-auto w-full max-w-2xl">
@@ -124,4 +145,12 @@ export default function Quiz({ onComplete }) {
       </div>
     </div>
   )
+}
+
+/**
+ * PropTypes validation for Quiz component props.
+ */
+Quiz.propTypes = {
+  /** Callback function called with answers object when user completes quiz */
+  onComplete: PropTypes.func.isRequired,
 }
