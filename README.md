@@ -123,18 +123,22 @@ EcoVillage is an interactive Carbon Footprint Awareness Platform built as a gami
 
 ```
 h2s_Submission3/
+├── Screenshots/
+│   ├── home.png                   # Landing page
+│   ├── quiz.png                   # Quiz screen
+│   ├── village_green.png          # Green thriving village
+│   └── village_polluted.png       # Polluted dark village
 ├── src/
 │   ├── components/
 │   │   ├── World.jsx              # 3D Three.js village scene
 │   │   ├── Quiz.jsx               # 10-question habit assessment
 │   │   ├── Dashboard.jsx          # Score, rank, AI tips, share button
-│   │   └── Navbar.jsx             # Navigation with progress steps
-│   ├── utils/
-│   │   └── calculator.js          # Carbon score calculation logic
-│   ├── components/
-│   │   ├── calculator.test.js     # 42 unit tests for calculator
+│   │   ├── Navbar.jsx             # Navigation with progress steps
 │   │   ├── Quiz.test.jsx          # 4 component tests for Quiz
 │   │   └── Dashboard.test.jsx     # 6 component tests for Dashboard
+│   ├── utils/
+│   │   ├── calculator.js          # Carbon score calculation logic
+│   │   └── calculator.test.js     # 42 unit tests for calculator
 │   ├── setupTests.js              # jest-dom test setup
 │   ├── App.jsx                    # Main app flow controller
 │   ├── main.jsx                   # React entry point
