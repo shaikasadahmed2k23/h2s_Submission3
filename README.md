@@ -13,6 +13,8 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 [![Three.js](https://img.shields.io/badge/Three.js-3D%20World-black?logo=three.js)](https://threejs.org)
 ![Tests](https://img.shields.io/badge/Tests-52%20Passing-brightgreen?logo=vitest)
+![PropTypes](https://img.shields.io/badge/PropTypes-Validated-blue)
+![JSDoc](https://img.shields.io/badge/JSDoc-Documented-orange)
 ![Vite](https://img.shields.io/badge/Vite-Build%20Tool-646CFF?logo=vite)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -227,6 +229,18 @@ npm run build
 - Fully keyboard-navigable quiz interface
 - Mobile responsive across all screen sizes and devices
 - Screen-reader friendly score and rank announcements
+
+---
+
+## ⚡ Code Quality & Performance
+
+- **JSDoc Comments** — Every function across all components is fully documented with parameter and return type descriptions
+- **PropTypes Validation** — All components have runtime type checking via PropTypes for safer, more maintainable code
+- **Constants Config** — All hardcoded values extracted to `src/constants/config.js` for single source of truth
+- **useMemo Optimization** — Expensive carbon score calculations in Dashboard memoized to prevent unnecessary re-renders
+- **useCallback Optimization** — Event handlers in Quiz wrapped with useCallback for stable function references
+- **React.lazy + Suspense** — World.jsx (heaviest 3D component) is lazily loaded to improve initial page load time
+- **useEffect Cleanup** — All animation frames and event listeners properly cleaned up to prevent memory leaks
 
 ---
 
